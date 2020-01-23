@@ -1,0 +1,18 @@
+{
+	"name": "nodejs-cplus-openmp",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"addon:build:debug": "node-gyp configure rebuild --debug",
+		"addon:build:release": "node-gyp configure rebuild --release",
+		"addon:run": "node ./index.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"node-gyp": "^6.1.0"
+	}
+}
