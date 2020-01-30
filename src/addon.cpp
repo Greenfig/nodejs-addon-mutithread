@@ -11,6 +11,7 @@ using v8::Object;
 using v8::String;
 using v8::Number;
 using v8::Value;
+using v8::Array;
 using v8::Context;
 using namespace std;
 
@@ -19,21 +20,26 @@ void SingleThreaded(const FunctionCallbackInfo<Value> &args)
     Isolate *isolate = args.GetIsolate();
     Local<Context> context = Context::New(isolate);
 
-    // Get method parameters
-    unsigned long long int number = args[0]->IsUndefined() ? 0 : args[0]->ToBigInt(context).ToLocalChecked()->Uint64Value();
+	// Get method parameters
+	string strNumValue = *String::Utf8Value(isolate, args[0]->ToString(context).ToLocalChecked());
+    unsigned long long int number = strtoull(strNumValue.c_str(), nullptr, 0);
 
-    const auto recurseDivide = [](unsigned long long int num) -> unsigned long long int {
-        auto rF = [](unsigned long long int num, unsigned long long int count, auto& ref) mutable -> unsigned long long int {
-            if ((count != 1) && (num != count) && (num % count == 0)) return count;
-            else if (num == count) return 0;
-            return ref(num, ++count, ref);
-        };
-        return rF(num, 1, rF);
-    };
+	// Brute force factorize
+	for (unsigned long long int count = 2; count < number; count++) {
+		if (number % count == 0) {
+			char prime1[20], prime2[20];
+			ultoa(count, prime1, 10);
+			ultoa(number / count, prime2, 10);
 
-    unsigned long long int f = recurseDivide(number);
+			Local<Array> returnArr = Array::New(isolate, 3);
+			returnArr->Set(context, 0, Local<String>::New(isolate, String::NewFromUtf8(isolate, strNumValue.c_str(), NewStringType::kNormal).ToLocalChecked()));
+			returnArr->Set(context, 1, Local<String>::New(isolate, String::NewFromUtf8(isolate, prime1, NewStringType::kNormal).ToLocalChecked()));
+			returnArr->Set(context, 2, Local<String>::New(isolate, String::NewFromUtf8(isolate, prime2, NewStringType::kNormal).ToLocalChecked()));
 
-    args.GetReturnValue().Set((uint32_t)f);
+			args.GetReturnValue().Set(returnArr);
+			break;
+		}
+	}
 }
 
 void OpenMp(const FunctionCallbackInfo<Value> &args)
